@@ -6,7 +6,9 @@ import '../constants/strings.dart';
 import '../constants/text_styles.dart';
 import '../providers/auth_provider.dart';
 import '../models/order.dart';
+import '../models/product.dart';
 import '../services/local_order_service.dart';
+import '../providers/product_provider.dart';
 
 class UserOrdersScreen extends StatefulWidget {
   const UserOrdersScreen({Key? key}) : super(key: key);
@@ -141,7 +143,7 @@ class _UserOrdersScreenState extends State<UserOrdersScreen> {
                     crossAxisCount: crossAxisCount,
                     crossAxisSpacing: 20,
                     mainAxisSpacing: 20,
-                    childAspectRatio: 0.85, // Немного вытянутые карточки
+                    childAspectRatio: 1.4, // Еще больше уменьшена высота
                   ),
                   itemCount: _orders.length,
                   itemBuilder: (context, index) {
@@ -297,126 +299,192 @@ class _UserOrdersScreenState extends State<UserOrdersScreen> {
     final dateFormat = DateFormat('dd.MM.yyyy');
     final formattedDate = dateFormat.format(order.orderDate);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(8), // Небольшие закругления
-        border: Border.all(color: AppColors.border, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Верхняя часть - номер заказа и статус
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '#${order.id.substring(0, 6).toUpperCase()}',
-                    style: AppTextStyles.heading4.copyWith(
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.0,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                _buildStatusChip(order.status),
-              ],
-            ),
-            
-            const SizedBox(height: 12),
-            
-            // Дата заказа
-            Text(
-              formattedDate,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // Количество товаров
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.lightGray,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                '${order.items.length} ТАУАР',
-                style: AppTextStyles.overline.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // Первые 2 товара
-            ...order.items.take(2).map((item) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Text(
-                item.productName,
-                style: AppTextStyles.bodySmall.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            )),
-            
-            // Если товаров больше 2
-            if (order.items.length > 2)
-              Text(
-                '+${order.items.length - 2} ЕЩЕ',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            
-            const Spacer(),
-            
-            // Разделитель
-            Container(
-              height: 1,
-              color: AppColors.border,
-              margin: const EdgeInsets.symmetric(vertical: 12),
-            ),
-            
-            // Итоговая сумма
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'СОМА:',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                Text(
-                  '${order.totalAmount.toInt()} ₸',
-                  style: AppTextStyles.price.copyWith(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
+    return GestureDetector(
+      onTap: () => _showOrderDetails(order),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.cardBackground,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.border, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.shadow,
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Верхняя часть - номер заказа и статус
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '#${order.id.substring(0, 6).toUpperCase()}',
+                      style: AppTextStyles.heading4.copyWith(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.0,
+                        fontSize: 16, // Увеличен размер шрифта
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  _buildStatusChip(order.status),
+                ],
+              ),
+              
+              const SizedBox(height: 10),
+              
+              // Дата заказа
+              Text(
+                formattedDate,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16, // Увеличен размер
+                ),
+              ),
+              
+              const SizedBox(height: 14),
+              
+              // Фото первого товара и количество товаров
+              if (order.items.isNotEmpty)
+                Row(
+                  children: [
+                    // Фото первого товара
+                    _buildProductImage(order.items.first.productId),
+                    const SizedBox(width: 14),
+                    
+                    // Информация о товарах
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Название первого товара
+                          Text(
+                            order.items.first.productName,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13, // Увеличен размер
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 6),
+                          
+                          // Количество товаров
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: AppColors.lightGray,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '${order.items.length} ТАУАР',
+                              style: AppTextStyles.overline.copyWith(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 10, // Увеличен размер
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              
+              if (order.items.length > 1) ...[
+                const SizedBox(height: 8),
+                Text(
+                  '+${order.items.length - 1} ЕЩЕ',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12, // Увеличен размер
+                  ),
+                ),
+              ],
+              
+              const Spacer(),
+              
+              // Разделитель
+              Container(
+                height: 1,
+                color: AppColors.border,
+                margin: const EdgeInsets.symmetric(vertical: 10),
+              ),
+              
+              // Итоговая сумма
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'СОМА:',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                      fontSize: 12, // Увеличен размер
+                    ),
+                  ),
+                  Text(
+                    '${order.totalAmount.toInt()} ₸',
+                    style: AppTextStyles.price.copyWith(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16, // Увеличен размер
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+
+  Widget _buildProductImage(String productId) {
+    return FutureBuilder<Product?>(
+      future: Provider.of<ProductProvider>(context, listen: false).getProductById(productId),
+      builder: (context, snapshot) {
+        String imageUrl = '';
+        if (snapshot.hasData && snapshot.data != null) {
+          imageUrl = snapshot.data!.imageUrl;
+        }
+        
+        return Container(
+          width: 105, // Увеличен размер фото
+          height: 105,
+          decoration: BoxDecoration(
+            color: AppColors.lightGray,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.border, width: 1),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(7),
+            child: imageUrl.isNotEmpty
+                ? Image.asset(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.image_not_supported_outlined,
+                        color: AppColors.textSecondary,
+                        size: 28, // Увеличена иконка
+                      );
+                    },
+                  )
+                : const Icon(
+                    Icons.image_not_supported_outlined,
+                    color: AppColors.textSecondary,
+                    size: 28, // Увеличена иконка
+                  ),
+          ),
+        );
+      },
     );
   }
 
@@ -451,7 +519,7 @@ class _UserOrdersScreenState extends State<UserOrdersScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), // Увеличен padding
       decoration: BoxDecoration(
         color: statusColor.withOpacity(0.15),
         borderRadius: BorderRadius.circular(4),
@@ -462,8 +530,103 @@ class _UserOrdersScreenState extends State<UserOrdersScreen> {
         style: AppTextStyles.overline.copyWith(
           color: statusColor,
           fontWeight: FontWeight.w700,
-          fontSize: 9,
+          fontSize: 10, // Увеличен размер шрифта
         ),
+      ),
+    );
+  }
+
+  void _showOrderDetails(Order order) {
+    final dateFormat = DateFormat('dd.MM.yyyy HH:mm');
+    final formattedDate = dateFormat.format(order.orderDate);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.background,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero,
+        ),
+        title: Text(
+          'ТАПСЫРЫС #${order.id.substring(0, 8).toUpperCase()}',
+          style: AppTextStyles.heading3.copyWith(
+            letterSpacing: 1.0,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Күн: $formattedDate',
+                style: AppTextStyles.bodyMedium,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Text(
+                    'Күй: ',
+                    style: AppTextStyles.bodyMedium,
+                  ),
+                  _buildStatusChip(order.status),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Сома: ${order.totalAmount.toInt()} ${AppStrings.currency}',
+                style: AppTextStyles.price,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'ТАУАРЛАР:',
+                style: AppTextStyles.heading4.copyWith(
+                  letterSpacing: 1.0,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ...order.items.map((item) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  children: [
+                    _buildProductImage(item.productId),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.productName,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            'Саны: ${item.quantity} x ${item.price.toInt()} ₸ = ${(item.price * item.quantity).toInt()} ₸',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'ЖАБУ',
+              style: AppTextStyles.buttonMedium.copyWith(
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
