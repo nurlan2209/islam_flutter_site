@@ -575,23 +575,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: AppStrings.orders,
                   onTap: () {
                     Navigator.pop(context);
-                    // Здесь можно добавить переход к заказам пользователя
-                  },
-                ),
-                _buildMenuTile(
-                  icon: Icons.settings_outlined,
-                  title: 'НАСТРОЙКИ',
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Здесь можно добавить экран настроек
-                  },
-                ),
-                _buildMenuTile(
-                  icon: Icons.help_outline,
-                  title: 'ПОМОЩЬ',
-                  onTap: () {
-                    Navigator.pop(context);
-                    // Здесь можно добавить экран помощи
+                    Navigator.pushNamed(context, AppRoutes.userOrders);
                   },
                 ),
                 _buildMenuTile(

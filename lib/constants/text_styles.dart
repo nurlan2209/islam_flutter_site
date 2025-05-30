@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'colors.dart';
 
 class AppTextStyles {
-  // Базовый шрифт как у Adidas - чистый и современный
+  // Базовый шрифт - чистый и современный
   static const String fontFamily = 'Helvetica Neue';
   
-  // Огромные заголовки как в баннерах Adidas
+  // Огромные заголовки как в баннерах 
   static const TextStyle displayLarge = TextStyle(
     fontFamily: fontFamily,
     fontSize: 48.0,

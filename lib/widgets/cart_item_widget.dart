@@ -18,136 +18,214 @@ class CartItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Изображение товара
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                item.productImageUrl ?? 'assets/images/placeholder.png',
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        border: Border.all(color: AppColors.border, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Верхняя часть: изображение и основная информация
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Изображение товара
+              Container(
                 width: 80,
                 height: 80,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 80,
-                    height: 80,
-                    color: AppColors.secondary,
-                    child: const Icon(
-                      Icons.image_not_supported,
+                decoration: BoxDecoration(
+                  color: AppColors.lightGray,
+                  border: Border.all(color: AppColors.border, width: 1),
+                ),
+                child: item.productImageUrl != null && item.productImageUrl!.isNotEmpty
+                    ? Image.asset(
+                        item.productImageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Icon(
+                              Icons.image_not_supported_outlined,
+                              color: AppColors.textSecondary,
+                              size: 32,
+                            ),
+                          );
+                        },
+                      )
+                    : const Center(
+                        child: Icon(
+                          Icons.image_not_supported_outlined,
+                          color: AppColors.textSecondary,
+                          size: 32,
+                        ),
+                      ),
+              ),
+              
+              const SizedBox(width: 16),
+              
+              // Информация о товаре
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Название товара
+                    Text(
+                      item.productName ?? 'Неизвестный товар',
+                      style: AppTextStyles.productTitle.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    
+                    const SizedBox(height: 8),
+                    
+                    // Размер и цвет
+                    Text(
+                      'РАЗМЕР: ${item.selectedSize}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 4),
+                    
+                    Text(
+                      'ЦВЕТ: ${item.selectedColor}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Кнопка удаления
+              IconButton(
+                icon: const Icon(Icons.close, size: 20),
+                onPressed: onRemove,
+                color: AppColors.textSecondary,
+                constraints: const BoxConstraints(),
+                padding: EdgeInsets.zero,
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 20),
+          
+          // Нижняя часть: количество и цена
+          Row(
+            children: [
+              // Селектор количества
+              _buildQuantitySelector(),
+              
+              const Spacer(),
+              
+              // Цены
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Цена за единицу
+                  Text(
+                    '${item.productPrice?.toInt() ?? 0} ${AppStrings.currency}',
+                    style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),
-                  );
-                },
-              ),
-            ),
-            
-            const SizedBox(width: 12),
-            
-            // Информация о товаре
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.productName ?? '',
-                    style: AppTextStyles.heading4,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
                   
                   const SizedBox(height: 4),
                   
-                  // Размер и цвет
+                  // Общая цена
                   Text(
-                    '${AppStrings.chooseSize}: ${item.selectedSize}',
-                    style: AppTextStyles.bodySmall,
-                  ),
-                  
-                  Text(
-                    '${AppStrings.chooseColor}: ${item.selectedColor}',
-                    style: AppTextStyles.bodySmall,
-                  ),
-                  
-                  const SizedBox(height: 8),
-                  
-                  // Цена и общая сумма
-                  Row(
-                    children: [
-                      Text(
-                        '${item.productPrice ?? 0} ${AppStrings.currency}',
-                        style: AppTextStyles.price,
-                      ),
-                      const Spacer(),
-                      Text(
-                        '${AppStrings.total}: ${item.totalPrice} ${AppStrings.currency}',
-                        style: AppTextStyles.bodyMedium,
-                      ),
-                    ],
+                    '${item.totalPrice.toInt()} ${AppStrings.currency}',
+                    style: AppTextStyles.price.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
     );
   }
-}
 
-// Виджет для изменения количества
-class QuantitySelector extends StatelessWidget {
-  final int quantity;
-  final Function(int) onChanged;
-
-  const QuantitySelector({
-    Key? key,
-    required this.quantity,
-    required this.onChanged,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildQuantitySelector() {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Кнопка уменьшения
-          IconButton(
-            onPressed: quantity > 1 ? () => onChanged(quantity - 1) : null,
-            icon: const Icon(Icons.remove),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            color: quantity > 1 ? AppColors.primary : AppColors.buttonDisabled,
-            iconSize: 18,
+          InkWell(
+            onTap: item.quantity > 1
+                ? () => onUpdateQuantity(item.quantity - 1)
+                : null,
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: item.quantity > 1 ? AppColors.cardBackground : AppColors.lightGray,
+                border: Border(
+                  right: BorderSide(color: AppColors.border, width: 1),
+                ),
+              ),
+              child: Icon(
+                Icons.remove,
+                size: 16,
+                color: item.quantity > 1 ? AppColors.textPrimary : AppColors.textSecondary,
+              ),
+            ),
           ),
           
-          // Текущее количество
+          // Количество
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(
-              quantity.toString(),
-              style: AppTextStyles.bodyMedium,
+            width: 48,
+            height: 36,
+            decoration: const BoxDecoration(
+              color: AppColors.cardBackground,
+            ),
+            child: Center(
+              child: Text(
+                item.quantity.toString(),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
           
           // Кнопка увеличения
-          IconButton(
-            onPressed: () => onChanged(quantity + 1),
-            icon: const Icon(Icons.add),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            color: AppColors.primary,
-            iconSize: 18,
+          InkWell(
+            onTap: () => onUpdateQuantity(item.quantity + 1),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.cardBackground,
+                border: Border(
+                  left: BorderSide(color: AppColors.border, width: 1),
+                ),
+              ),
+              child: const Icon(
+                Icons.add,
+                size: 16,
+                color: AppColors.textPrimary,
+              ),
+            ),
           ),
         ],
       ),

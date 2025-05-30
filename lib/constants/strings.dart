@@ -58,7 +58,7 @@ class AppStrings {
   // Себет
   static const cart = 'Себет';
   static const emptyCart = 'Сіздің себетіңіз бос';
-  static const continueShopping = 'Сауда жасауды жалғастыру';
+  static const continueShopping = 'Сауда жасау';
   static const checkout = 'Тапсырыс беру';
   static const total = 'Жалпы сома';
   static const removeItem = 'Жою';

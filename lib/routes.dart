@@ -5,6 +5,7 @@ import 'screens/product_detail_screen.dart';
 import 'screens/cart_screen.dart';
 import 'screens/payment_screen.dart';
 import 'screens/auth_screen.dart';
+import 'screens/user_orders_screen.dart';
 import 'screens/admin/admin_panel.dart';
 import 'screens/admin/admin_orders_page.dart';
 import 'screens/admin/product_form.dart';
@@ -20,12 +21,13 @@ class AppRoutes {
   static const String payment = '/payment';
   static const String login = '/login';
   static const String register = '/register';
+  static const String userOrders = '/user-orders';
   static const String adminPanel = '/admin-panel';
   static const String adminProducts = '/admin-products';
   static const String addProduct = '/add-product';
   static const String editProduct = '/edit-product';
   static const String adminUsers = '/admin-users';
-  static const String adminOrders = '/admin-orders'; // Добавьте этот маршрут
+  static const String adminOrders = '/admin-orders';
 
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -64,6 +66,9 @@ class AppRoutes {
           builder: (_) => const AuthScreen(isLogin: false),
         );
       
+      case userOrders:
+        return MaterialPageRoute(builder: (_) => const UserOrdersScreen());
+      
       case adminPanel:
         return MaterialPageRoute(builder: (_) => const AdminPanel());
       
@@ -85,7 +90,7 @@ class AppRoutes {
         return MaterialPageRoute(
           builder: (_) => const AdminPanel(initialTab: 1),
         );
-      case adminOrders: // Добавьте этот маршрут
+      case adminOrders:
         return MaterialPageRoute(
           builder: (_) => const AdminPanel(initialTab: 2),
         );
