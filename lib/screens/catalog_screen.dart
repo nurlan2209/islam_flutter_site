@@ -35,12 +35,42 @@ class _CatalogScreenState extends State<CatalogScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final productProvider = Provider.of<ProductProvider>(context, listen: false);
       
+      // Если передана категория, устанавливаем ее как выбранную
       if (widget.category != null && widget.category!.isNotEmpty) {
-        productProvider.setSelectedCategory(widget.category!);
+        if (widget.category == 'ЛЕТНЯЯ_КОЛЛЕКЦИЯ') {
+          // Для летней коллекции не устанавливаем конкретную категорию
+          // Фильтрация будет происходить в _getFilteredProducts
+          productProvider.setSelectedCategory('');
+        } else {
+          // Нормализуем название категории для поиска
+          String normalizedCategory = _normalizeCategory(widget.category!);
+          productProvider.setSelectedCategory(normalizedCategory);
+        }
       }
       
       _updatePriceRange(productProvider.products);
     });
+  }
+
+  // Функция для нормализации названий категорий
+  String _normalizeCategory(String category) {
+    switch (category.toUpperCase()) {
+      case 'ФУТБОЛКА':
+      case 'ФУТБОЛКАЛАР':
+        return 'Футболка';
+      case 'ХУДИ':
+        return 'Худи';
+      case 'ЖЕЙДЕ':
+        return 'Жейде';
+      case 'СВИТШОТЫ':
+        return 'Свитшоты';
+      case 'ВЕТРОВКИ':
+        return 'Ветровки';
+      case 'АКСЕССУАРЫ':
+        return 'Аксессуары';
+      default:
+        return category;
+    }
   }
 
   @override
@@ -105,6 +135,15 @@ class _CatalogScreenState extends State<CatalogScreen> {
   }
 
   PreferredSizeWidget _buildAppBar() {
+    String titleText;
+    if (widget.category == 'ЛЕТНЯЯ_КОЛЛЕКЦИЯ') {
+      titleText = 'ЛЕТНЯЯ КОЛЛЕКЦИЯ';
+    } else if (widget.category != null && widget.category!.isNotEmpty) {
+      titleText = widget.category!.toUpperCase();
+    } else {
+      titleText = AppStrings.catalog.toUpperCase();
+    }
+
     return AppBar(
       backgroundColor: AppColors.background,
       foregroundColor: AppColors.textPrimary,
@@ -115,9 +154,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
         onPressed: () => Navigator.pop(context),
       ),
       title: Text(
-        (widget.category != null && widget.category!.isNotEmpty)
-            ? widget.category!.toUpperCase()
-            : AppStrings.catalog.toUpperCase(),
+        titleText,
         style: AppTextStyles.navigation.copyWith(
           fontWeight: FontWeight.w700,
           letterSpacing: 1.0,
@@ -709,6 +746,14 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
   List<Product> _getFilteredProducts(List<Product> products) {
     List<Product> result = List.from(products);
+    
+    // Специальная фильтрация для летней коллекции
+    if (widget.category == 'ЛЕТНЯЯ_КОЛЛЕКЦИЯ') {
+      final summerCategories = ['Футболка', 'Свитшоты', 'Аксессуары', 'Жейде'];
+      result = result.where((product) {
+        return summerCategories.contains(product.category);
+      }).toList();
+    }
     
     // Фильтр по цене
     result = result.where((product) {

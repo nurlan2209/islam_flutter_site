@@ -7,7 +7,6 @@ import '../providers/auth_provider.dart';
 import '../providers/product_provider.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/product_card.dart';
-import '../widgets/custom_button.dart';
 import '../routes.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -38,233 +37,398 @@ class _HomeScreenState extends State<HomeScreen> {
     final cartProvider = Provider.of<CartProvider>(context);
     
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: _buildAppBar(authProvider, cartProvider),
+      backgroundColor: Colors.white,
       body: productProvider.isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                color: AppColors.primary,
+                color: Colors.black,
                 strokeWidth: 2,
               ),
             )
-          : SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Главный баннер в стиле Adidas
-                  _buildHeroBanner(),
-                  
-                  const SizedBox(height: 80),
-                  
-                  // О бренде
-                  _buildAboutSection(),
-                  
-                  const SizedBox(height: 80),
-                  
-                  // Категории
-                  _buildCategories(productProvider),
-                  
-                  const SizedBox(height: 80),
-                  
-                  // Новые поступления
-                  _buildNewArrivals(productProvider),
-                  
-                  const SizedBox(height: 80),
-                  
-                  // Популярные товары
-                  _buildPopularItems(productProvider),
-                  
-                  const SizedBox(height: 100),
-                ],
-              ),
+          : CustomScrollView(
+              slivers: [
+                // App Bar
+                _buildAppBar(authProvider, cartProvider),
+                
+                // Hero Section
+                _buildHeroSection(),
+                
+                // Categories Section
+                _buildCategoriesSection(),
+                
+                // Products Section
+                _buildProductsSection(productProvider),
+              ],
             ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar(AuthProvider authProvider, CartProvider cartProvider) {
-    return AppBar(
-      backgroundColor: AppColors.background,
-      foregroundColor: AppColors.textPrimary,
+  Widget _buildAppBar(AuthProvider authProvider, CartProvider cartProvider) {
+    return SliverAppBar(
+      backgroundColor: Colors.white,
       elevation: 0,
-      scrolledUnderElevation: 0,
-      centerTitle: false,
-      title: Text(
-        AppStrings.appName.toUpperCase(),
-        style: AppTextStyles.navigation.copyWith(
-          fontWeight: FontWeight.w700,
-          letterSpacing: 2.0,
-        ),
-      ),
-      actions: [
-        // Поиск
-        IconButton(
-          icon: const Icon(Icons.search, size: 24),
-          onPressed: () {
-            Navigator.pushNamed(context, AppRoutes.catalog);
-          },
-        ),
-        
-        // Корзина в стиле Adidas
-        Stack(
-          alignment: Alignment.center,
+      floating: true,
+      pinned: true,
+      toolbarHeight: 80,
+      flexibleSpace: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        child: Row(
           children: [
-            IconButton(
-              icon: const Icon(Icons.shopping_bag_outlined, size: 24),
-              onPressed: () {
-                Navigator.pushNamed(context, AppRoutes.cart);
-              },
+            // Logo
+            Text(
+              'QAZAQ REPUBLIC',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: Colors.black,
+                letterSpacing: 1.5,
+              ),
             ),
-            if (authProvider.isLoggedIn && cartProvider.itemCount > 0)
-              Positioned(
-                right: 6,
-                top: 6,
-                child: Container(
-                  width: 18,
-                  height: 18,
+            
+            const Spacer(),
+            
+            // Navigation Menu
+            Row(
+              children: [
+                _buildNavItem('КАТАЛОГ', () {
+                  Navigator.pushNamed(context, AppRoutes.catalog);
+                }),
+                const SizedBox(width: 32),
+                _buildNavItem('О БРЕНДЕ', () {}),
+                const SizedBox(width: 32),
+                _buildNavItem('КОНТАКТЫ', () {}),
+              ],
+            ),
+            
+            const Spacer(),
+            
+            // Icons
+            Row(
+              children: [
+                // Search
+                IconButton(
+                  icon: const Icon(Icons.search, color: Colors.black, size: 24),
+                  onPressed: () {
+                    Navigator.pushNamed(context, AppRoutes.catalog);
+                  },
+                ),
+                
+                // Favorites
+                IconButton(
+                  icon: const Icon(Icons.favorite_border, color: Colors.black, size: 24),
+                  onPressed: () {},
+                ),
+                
+                // Cart
+                Stack(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.shopping_bag_outlined, color: Colors.black, size: 24),
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.cart);
+                      },
+                    ),
+                    if (authProvider.isLoggedIn && cartProvider.itemCount > 0)
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: Container(
+                          width: 18,
+                          height: 18,
+                          decoration: const BoxDecoration(
+                            color: Colors.black,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              cartProvider.itemCount.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                
+                // Profile
+                Container(
+                  width: 48,
+                  height: 48,
                   decoration: const BoxDecoration(
-                    color: AppColors.error,
+                    color: Colors.black,
                     shape: BoxShape.circle,
                   ),
-                  child: Center(
-                    child: Text(
-                      cartProvider.itemCount.toString(),
-                      style: AppTextStyles.overline.copyWith(
-                        color: AppColors.textLight,
-                        fontSize: 9,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  child: IconButton(
+                    icon: const Icon(Icons.person, color: Colors.white, size: 24),
+                    onPressed: () {
+                      if (authProvider.isLoggedIn) {
+                        _showProfileMenu(context);
+                      } else {
+                        Navigator.pushNamed(context, AppRoutes.login);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(String title, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: Colors.black87,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeroSection() {
+    return SliverToBoxAdapter(
+      child: Container(
+        height: 600,
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8E8E8),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Stack(
+          children: [
+            // Background Image
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.asset(
+                  'assets/images/banner.jpg',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: const Color(0xFFE8E8E8),
+                    );
+                  },
+                ),
+              ),
+            ),
+            
+            // Gradient Overlay
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Colors.black.withOpacity(0.7),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            
+            // Left Content
+            Positioned(
+              left: 60,
+              top: 0,
+              bottom: 0,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'QAZAQ REPUBLIC',
+                    style: TextStyle(
+                      fontSize: 56,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: -1.0,
+                      height: 0.9,
+                    ),
+                  ),
+                  Text(
+                    'CLASSIC',
+                    style: TextStyle(
+                      fontSize: 56,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: -1.0,
+                      height: 0.9,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Қазақстандық классикалық\nкиім бренді',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white.withOpacity(0.9),
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Bottom Right Button
+            Positioned(
+              bottom: 40,
+              right: 40,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.catalog);
+                  },
+                  child: const Text(
+                    'В КАТАЛОГ',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.0,
                     ),
                   ),
                 ),
               ),
+            ),
           ],
         ),
-        
-        // Профиль
-        IconButton(
-          icon: Icon(
-            authProvider.isLoggedIn ? Icons.person_outline : Icons.person_outline,
-            size: 24,
-          ),
-          onPressed: () {
-            if (authProvider.isLoggedIn) {
-              _showProfileMenu(context);
-            } else {
-              Navigator.pushNamed(context, AppRoutes.login);
-            }
-          },
-        ),
-        
-        const SizedBox(width: 8),
-      ],
+      ),
     );
   }
 
-  Widget _buildHeroBanner() {
-    return Container(
-      height: 600,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.lightGray,
-        image: DecorationImage(
-          image: AssetImage('assets/images/banner.jpg'),
-          fit: BoxFit.cover,
-          onError: (error, stackTrace) {},
-        ),
-      ),
+  Widget _buildCategoriesSection() {
+    return SliverToBoxAdapter(
       child: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.bannerGradient,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Основной заголовок как у Adidas
-              Text(
-                'QAZAQ\nREPUBLIC',
-                style: AppTextStyles.displayLarge.copyWith(
-                  color: AppColors.textLight,
-                  fontSize: 64,
-                  height: 0.9,
-                ),
-              ),
-              
-              const SizedBox(height: 8),
-              
-              Text(
-                'CLASSIC',
-                style: AppTextStyles.displayMedium.copyWith(
-                  color: AppColors.textLight,
-                  fontSize: 48,
-                  letterSpacing: 4.0,
-                ),
-              ),
-              
-              const SizedBox(height: 32),
-              
-              Text(
-                AppStrings.welcomeSubtitle.toUpperCase(),
-                style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.textLight,
-                  letterSpacing: 1.0,
-                ),
-              ),
-              
-              const SizedBox(height: 48),
-              
-              // Кнопка в стиле Adidas
-              _buildAdidasButton(
-                text: AppStrings.exploreCollection.toUpperCase(),
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.catalog);
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAdidasButton({
-    required String text,
-    required VoidCallback onPressed,
-    bool isOutlined = false,
-  }) {
-    return Container(
-      height: 56,
-      constraints: const BoxConstraints(minWidth: 200),
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isOutlined ? AppColors.background : AppColors.primary,
-          foregroundColor: isOutlined ? AppColors.primary : AppColors.textLight,
-          side: isOutlined ? const BorderSide(color: AppColors.primary, width: 2) : null,
-          elevation: 0,
-          shadowColor: Colors.transparent,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero, // Прямоугольные кнопки как у Adidas
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+        child: Column(
           children: [
-            Text(
-              text,
-              style: AppTextStyles.buttonLarge.copyWith(
-                color: isOutlined ? AppColors.primary : AppColors.textLight,
-                letterSpacing: 1.5,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Icon(
-              Icons.arrow_forward,
-              size: 20,
-              color: isOutlined ? AppColors.primary : AppColors.textLight,
+            // Categories Grid
+            Row(
+              children: [
+                // Left Category
+                Expanded(
+                  child: Container(
+                    height: 280,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2A2A2A),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Stack(
+                      children: [
+                        // Category List
+                        Positioned(
+                          left: 30,
+                          top: 30,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildCategoryItem('ФУТБОЛКАЛАР'),
+                              _buildCategoryItem('ХУДИ'),
+                              _buildCategoryItem('ЖЕЙДЕ'),
+                              _buildCategoryItem('СВИТШОТЫ'),
+                              _buildCategoryItem('ВЕТРОВКИ'),
+                              _buildCategoryItem('АКСЕССУАРЫ'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(width: 20),
+                
+                // Right Category
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      // Переходим в каталог с летней коллекцией (несколько категорий)
+                      Navigator.pushNamed(
+                        context, 
+                        AppRoutes.catalog, 
+                        arguments: 'ЛЕТНЯЯ_КОЛЛЕКЦИЯ'
+                      );
+                    },
+                    child: Container(
+                      height: 280,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8E8E8),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Stack(
+                        children: [
+                          // Background Image
+                          Positioned.fill(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.asset(
+                                'assets/images/banner2.jpg',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: const Color(0xFFE8E8E8),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          
+                          // Gradient Overlay
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.black.withOpacity(0.6),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          
+                          // Text
+                          const Positioned(
+                            bottom: 30,
+                            left: 30,
+                            child: Text(
+                              'ЛЕТНЯЯ КОЛЛЕКЦИЯ',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -272,244 +436,209 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildAboutSection() {
+  Widget _buildCategoryItem(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppStrings.aboutUs.toUpperCase(),
-            style: AppTextStyles.heading1.copyWith(
-              letterSpacing: 2.0,
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GestureDetector(
+        onTap: () {
+          // Переходим в каталог с предустановленной категорией
+          Navigator.pushNamed(context, AppRoutes.catalog, arguments: title);
+        },
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+                letterSpacing: 0.5,
+              ),
             ),
           ),
-          const SizedBox(height: 24),
-          Text(
-            AppStrings.aboutUsDescription,
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.6,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildCategories(ProductProvider productProvider) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                AppStrings.categories.toUpperCase(),
-                style: AppTextStyles.heading2.copyWith(
-                  letterSpacing: 1.5,
+  Widget _buildProductsSection(ProductProvider productProvider) {
+    return SliverToBoxAdapter(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+        child: Column(
+          children: [
+            // Section Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'БЕСТСЕЛЛЕРЫ',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
+                    letterSpacing: 1.0,
+                  ),
                 ),
-              ),
-              TextButton.icon(
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.catalog);
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black, width: 1),
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.catalog);
+                    },
+                    child: const Text(
+                      'В КАТАЛОГ',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 30),
+            
+            // Products Horizontal List
+            SizedBox(
+              height: 400,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.zero,
+                itemCount: productProvider.products.length,
+                itemBuilder: (context, index) {
+                  final product = productProvider.products[index];
+                  return Container(
+                    width: 280,
+                    margin: const EdgeInsets.only(right: 20),
+                    child: _buildModernProductCard(product),
+                  );
                 },
-                icon: const Icon(Icons.arrow_forward, size: 18),
-                label: Text(
-                  AppStrings.viewAll.toUpperCase(),
-                  style: AppTextStyles.navigation,
-                ),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.textPrimary,
-                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-        const SizedBox(height: 40),
-        Container(
-          height: 160,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            itemCount: productProvider.categories.length,
-            itemBuilder: (context, index) {
-              final category = productProvider.categories[index];
-              return Padding(
-                padding: const EdgeInsets.only(right: 24),
-                child: _buildCategoryCard(category),
-              );
-            },
-          ),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildCategoryCard(String category) {
+  Widget _buildModernProductCard(product) {
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
-          context, 
-          AppRoutes.catalog,
-          arguments: category,
+          context,
+          AppRoutes.productDetail,
+          arguments: product,
         );
       },
       child: Container(
-        width: 140,
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
-          border: Border.all(color: AppColors.border, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.shadow,
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              _getCategoryIcon(category),
-              size: 48,
-              color: AppColors.primary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              category.toUpperCase(),
-              style: AppTextStyles.categoryLabel.copyWith(
-                fontWeight: FontWeight.w600,
+            // Product Image
+            Expanded(
+              flex: 3,
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F5F5),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
+                  child: product.imageUrl.isNotEmpty
+                      ? Image.asset(
+                          product.imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(
+                              child: Icon(
+                                Icons.image_not_supported_outlined,
+                                size: 60,
+                                color: Colors.black26,
+                              ),
+                            );
+                          },
+                        )
+                      : const Center(
+                          child: Icon(
+                            Icons.image_not_supported_outlined,
+                            size: 60,
+                            color: Colors.black26,
+                          ),
+                        ),
+                ),
               ),
-              textAlign: TextAlign.center,
+            ),
+            
+            // Product Info
+            Expanded(
+              flex: 1,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Product Name
+                    Text(
+                      product.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    
+                    // Price
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${product.price.toInt()} ₸',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                          ),
+                        ),
+                        Text(
+                          product.category.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black54,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  IconData _getCategoryIcon(String category) {
-    switch (category.toLowerCase()) {
-      case 'футболкалар':
-        return Icons.checkroom_outlined;
-      case 'худи':
-        return Icons.dry_cleaning_outlined;
-      case 'жейде':
-        return Icons.business_center_outlined;
-      default:
-        return Icons.category_outlined;
-    }
-  }
-
-  Widget _buildNewArrivals(ProductProvider productProvider) {
-    final newProducts = productProvider.products.take(4).toList();
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                AppStrings.newArrivals.toUpperCase(),
-                style: AppTextStyles.heading2.copyWith(
-                  letterSpacing: 1.5,
-                ),
-              ),
-              TextButton.icon(
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.catalog);
-                },
-                icon: const Icon(Icons.arrow_forward, size: 18),
-                label: Text(
-                  AppStrings.viewAll.toUpperCase(),
-                  style: AppTextStyles.navigation,
-                ),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 40),
-        Container(
-          height: 400,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            itemCount: newProducts.length,
-            itemBuilder: (context, index) {
-              return Container(
-                width: 280,
-                margin: const EdgeInsets.only(right: 24),
-                child: ProductCard(product: newProducts[index]),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPopularItems(ProductProvider productProvider) {
-    final popularProducts = List.from(productProvider.products.reversed).take(6).toList();
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                AppStrings.popularItems.toUpperCase(),
-                style: AppTextStyles.heading2.copyWith(
-                  letterSpacing: 1.5,
-                ),
-              ),
-              TextButton.icon(
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.catalog);
-                },
-                icon: const Icon(Icons.arrow_forward, size: 18),
-                label: Text(
-                  AppStrings.viewAll.toUpperCase(),
-                  style: AppTextStyles.navigation,
-                ),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 40),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 24,
-              mainAxisSpacing: 32,
-              childAspectRatio: 0.75,
-            ),
-            itemCount: popularProducts.length,
-            itemBuilder: (context, index) {
-              return ProductCard(product: popularProducts[index]);
-            },
-          ),
-        ),
-      ],
     );
   }
 
@@ -518,9 +647,9 @@ class _HomeScreenState extends State<HomeScreen> {
     
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return SafeArea(
@@ -530,9 +659,12 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'МОЙ АККАУНТ',
-                  style: AppTextStyles.heading3.copyWith(
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
                     letterSpacing: 1.0,
                   ),
                 ),
@@ -543,21 +675,28 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 48,
                     height: 48,
                     decoration: const BoxDecoration(
-                      color: AppColors.primary,
+                      color: Colors.black,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.person,
-                      color: AppColors.textLight,
+                      color: Colors.white,
                     ),
                   ),
                   title: Text(
                     authProvider.user?.name ?? '',
-                    style: AppTextStyles.productTitle,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
                   ),
                   subtitle: Text(
                     authProvider.user?.email ?? '',
-                    style: AppTextStyles.productSubtitle,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.black54,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -606,25 +745,27 @@ class _HomeScreenState extends State<HomeScreen> {
         contentPadding: const EdgeInsets.symmetric(vertical: 4),
         leading: Icon(
           icon,
-          color: AppColors.textPrimary,
+          color: Colors.black,
           size: 24,
         ),
         title: Text(
           title.toUpperCase(),
-          style: AppTextStyles.navigation.copyWith(
+          style: const TextStyle(
+            fontSize: 14,
             fontWeight: FontWeight.w600,
+            color: Colors.black,
+            letterSpacing: 0.5,
           ),
         ),
         onTap: onTap,
         trailing: const Icon(
           Icons.arrow_forward_ios,
           size: 16,
-          color: AppColors.textSecondary,
+          color: Colors.black54,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(0),
         ),
-        hoverColor: AppColors.hoverOverlay,
       ),
     );
   }

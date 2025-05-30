@@ -75,6 +75,17 @@ class DatabaseService {
         'colors': 'Ақ,Көк,Қара',
         'category': 'Жейде',
         'stock': 25
+      },
+      {
+        'id': '4',
+        'name': 'QR Кепка',
+        'description': 'кепка. күнделікті лукты толықтыратын ерекше аксессуар.',
+        'price': 8000.0,
+        'image_url': '/assets/images/shirtlongdark-blue.jpeg',
+        'sizes': 'Стандарт',
+        'colors': 'Жасыл',
+        'category': 'Акссессуар',
+        'stock': 25
       }
     ]);
   }

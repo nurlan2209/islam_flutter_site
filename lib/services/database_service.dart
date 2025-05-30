@@ -121,25 +121,25 @@ class DatabaseService {
       }
     ];
     
-    // Добавляем тестовые товары с URL изображениями
+    // Добавляем обновленные товары
     _store['products'] = [
       {
         'id': '1',
-        'name': 'Qazaq Republic Classic футболка',
+        'name': 'QR Футболка',
         'description': 'Классикалық мақта футболка. 100% табиғи материал.',
         'price': 7990.0,
-        'image_url': '/assets/images/tshirt_black.jpg',
+        'image_url': 'assets/images/tshirt_black.jpg',
         'sizes': 'S,M,L,XL,XXL',
         'colors': 'Қара,Ақ,Сұр',
-        'category': 'Футболкалар',
+        'category': 'Футболка',
         'stock': 50
       },
       {
         'id': '2',
-        'name': 'Qazaq Republic Худи',
+        'name': 'QR Худи',
         'description': 'Жылы худи, қысқа және күзге арналған.',
         'price': 14990.0,
-        'image_url': '/assets/images/Hoode.jpeg',
+        'image_url': 'assets/images/Hoode.jpeg',
         'sizes': 'S,M,L,XL,XXL',
         'colors': 'Қара,Сұр,Көк',
         'category': 'Худи',
@@ -147,13 +147,46 @@ class DatabaseService {
       },
       {
         'id': '3',
-        'name': 'Qazaq Republic Жейде',
+        'name': 'QR Жейде',
         'description': 'Классикалық стильдегі жейде.',
         'price': 11990.0,
-        'image_url': '/assets/images/shirtlongdark-blue.jpeg',
+        'image_url': 'assets/images/shirtlongdark-blue.jpeg',
         'sizes': 'S,M,L,XL',
         'colors': 'Ақ,Көк,Қара',
         'category': 'Жейде',
+        'stock': 25
+      },
+      {
+        'id': '4',
+        'name': 'QR Кепка',
+        'description': 'кепка. күнделікті лукты толықтыратын ерекше аксессуар.',
+        'price': 8000.0,
+        'image_url': 'assets/images/cap.jpg',
+        'sizes': 'Стандарт',
+        'colors': 'Жасыл',
+        'category': 'Аксессуары',
+        'stock': 25
+      },
+      {
+        'id': '5',
+        'name': 'QR Свитшот',
+        'description': 'Свитшот. кез келген мезгілге арналған ыңғайлы киім. топтамада базалық және принтті үлгілер бар. qr-дың фирмалық үлгісінде жасалған.',
+        'price': 18000.0,
+        'image_url': 'assets/images/sweatshirt.jpg',
+        'sizes': 'S,M,L,XL',
+        'colors': 'Қызыл',
+        'category': 'Свитшоты',
+        'stock': 25
+      },
+      {
+        'id': '6',
+        'name': 'CARGO Ветровка',
+        'description': 'cargo jacket. кең пішімде жасалған күрте. үш сыйымды қалтасы бар.',
+        'price': 26500.0,
+        'image_url': 'assets/images/windbreaker.jpg',
+        'sizes': 'S,M,L,XL',
+        'colors': 'Қою көк',
+        'category': 'Ветровки',
         'stock': 25
       }
     ];
