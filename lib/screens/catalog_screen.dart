@@ -180,7 +180,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
   Widget _buildSearchSection(ProductProvider productProvider) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16), // Уменьшил с 24 до 16
       decoration: const BoxDecoration(
         color: AppColors.background,
         border: Border(
@@ -223,8 +223,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
             borderSide: BorderSide(color: AppColors.primary, width: 2),
           ),
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
+            horizontal: 16, // Уменьшил с 20
+            vertical: 12,   // Уменьшил с 16
           ),
         ),
         onChanged: (value) {
@@ -233,10 +233,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
       ),
     );
   }
-
   Widget _buildFiltersSection(ProductProvider productProvider) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Уменьшил отступы
       decoration: const BoxDecoration(
         color: AppColors.background,
         border: Border(
@@ -251,14 +250,14 @@ class _CatalogScreenState extends State<CatalogScreen> {
               // Категории
               Expanded(
                 child: _buildDropdown(
-                  hint: AppStrings.categories.toUpperCase(),
+                  hint: 'САНАТТАР', // Сократил название
                   value: productProvider.selectedCategory.isNotEmpty
                       ? productProvider.selectedCategory
                       : null,
                   items: [
                     const DropdownMenuItem<String>(
                       value: '',
-                      child: Text('ВСЕ КАТЕГОРИИ'),
+                      child: Text('БАРЛЫҒЫ'),
                     ),
                     ...productProvider.categories.map((category) {
                       return DropdownMenuItem<String>(
@@ -273,7 +272,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 ),
               ),
               
-              const SizedBox(width: 16),
+              const SizedBox(width: 12), // Уменьшил с 16
               
               // Сортировка
               Expanded(
@@ -283,15 +282,15 @@ class _CatalogScreenState extends State<CatalogScreen> {
                   items: const [
                     DropdownMenuItem<String>(
                       value: 'price_asc',
-                      child: Text('ЦЕНА: ПО ВОЗРАСТАНИЮ'),
+                      child: Text('БАҒАСЫ ↑'),
                     ),
                     DropdownMenuItem<String>(
                       value: 'price_desc',
-                      child: Text('ЦЕНА: ПО УБЫВАНИЮ'),
+                      child: Text('БАҒАСЫ ↓'),
                     ),
                     DropdownMenuItem<String>(
                       value: 'name',
-                      child: Text('ПО АЛФАВИТУ'),
+                      child: Text('ӘЛІПБИ'),
                     ),
                   ],
                   onChanged: (value) {
@@ -307,14 +306,13 @@ class _CatalogScreenState extends State<CatalogScreen> {
           
           // Расширенные фильтры
           if (_showFilters) ...[
-            const SizedBox(height: 24),
+            const SizedBox(height: 16), // Уменьшил с 24
             _buildAdvancedFilters(),
           ],
         ],
       ),
     );
   }
-
   Widget _buildDropdown({
     required String hint,
     required String? value,
@@ -620,7 +618,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
     final filteredProducts = _getFilteredProducts(productProvider.products);
     
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Уменьшил отступы
       decoration: const BoxDecoration(
         color: AppColors.background,
         border: Border(
@@ -628,27 +626,58 @@ class _CatalogScreenState extends State<CatalogScreen> {
         ),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             'НАЙДЕНО: ${filteredProducts.length} ТОВАРОВ',
             style: AppTextStyles.bodyMedium.copyWith(
               fontWeight: FontWeight.w600,
               letterSpacing: 0.5,
+              fontSize: 12, // Уменьшил размер шрифта
             ),
           ),
-          const Spacer(),
-          // Переключатели вида
           Row(
             children: [
-              IconButton(
-                icon: const Icon(Icons.grid_view, size: 20),
-                onPressed: () {},
-                color: AppColors.textPrimary,
+              // Grid view button
+              Container(
+                width: 32, // Уменьшил размер
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  border: Border.all(color: Colors.black, width: 1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.grid_view,
+                    color: Colors.white,
+                    size: 16, // Уменьшил размер иконки
+                  ),
+                  onPressed: () {},
+                  padding: EdgeInsets.zero,
+                ),
               ),
-              IconButton(
-                icon: const Icon(Icons.view_list, size: 20),
-                onPressed: () {},
-                color: AppColors.textSecondary,
+              
+              const SizedBox(width: 8),
+              
+              // List view button
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  border: Border.all(color: Colors.black, width: 1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.view_list,
+                    color: Colors.black,
+                    size: 16,
+                  ),
+                  onPressed: () {},
+                  padding: EdgeInsets.zero,
+                ),
               ),
             ],
           ),
@@ -656,7 +685,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
       ),
     );
   }
-
   Widget _buildProductGrid(ProductProvider productProvider, bool isDesktop, bool isTablet) {
     final filteredProducts = _getFilteredProducts(productProvider.products);
     
@@ -664,23 +692,129 @@ class _CatalogScreenState extends State<CatalogScreen> {
       return _buildEmptyState();
     }
     
-    final crossAxisCount = isDesktop ? 4 : (isTablet ? 3 : 2);
+    // Всегда 2 колонки для мобилки
+    final crossAxisCount = 2;
     
     return GridView.builder(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16), // Уменьшил с 24
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 24,
-        mainAxisSpacing: 32,
-        childAspectRatio: 0.75,
+        crossAxisSpacing: 12, // Уменьшил с 24
+        mainAxisSpacing: 16,  // Уменьшил с 32
+        childAspectRatio: 0.7, // Изменил для лучшего вида на мобилке
       ),
       itemCount: filteredProducts.length,
       itemBuilder: (context, index) {
-        return ProductCard(product: filteredProducts[index]);
+        return _buildMobileProductCard(filteredProducts[index]);
       },
     );
   }
 
+  Widget _buildMobileProductCard(Product product) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          '/product_detail', // Замените на правильный маршрут
+          arguments: product,
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Изображение товара
+            Expanded(
+              flex: 3,
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8F8F8),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(8),
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(8),
+                  ),
+                  child: product.imageUrl.isNotEmpty
+                      ? Image.asset(
+                          product.imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(
+                              child: Icon(
+                                Icons.image_not_supported_outlined,
+                                size: 40,
+                                color: Colors.black26,
+                              ),
+                            );
+                          },
+                        )
+                      : const Center(
+                          child: Icon(
+                            Icons.image_not_supported_outlined,
+                            size: 40,
+                            color: Colors.black26,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+            
+            // Информация о товаре
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Название товара
+                    Text(
+                      product.name,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    
+                    const SizedBox(height: 4),
+                    
+                    // Цена
+                    Text(
+                      '${product.price.toInt()} ₸',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
   Widget _buildEmptyState() {
     return Center(
       child: Padding(

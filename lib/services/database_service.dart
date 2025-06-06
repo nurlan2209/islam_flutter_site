@@ -1,132 +1,125 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:html' as html;
-import '../models/user.dart';
-import '../models/product.dart';
-import '../models/cart_item.dart';
+import 'dart:io';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path_provider/path_provider.dart';
 
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
-  static bool _initialized = false;
-  
-  // Ключи для localStorage
-  static const String _usersKey = 'qr_users';
-  static const String _productsKey = 'qr_products';
-  static const String _cartItemsKey = 'qr_cart_items';
-  static const String _ordersKey = 'qr_orders';
-  static const String _orderItemsKey = 'qr_order_items';
-  
-  // Хранилище данных в памяти
-  static Map<String, List<Map<String, dynamic>>> _store = {
-    'users': <Map<String, dynamic>>[],
-    'products': <Map<String, dynamic>>[],
-    'cart_items': <Map<String, dynamic>>[],
-    'orders': <Map<String, dynamic>>[],
-    'order_items': <Map<String, dynamic>>[],
-  };
+  static Database? _database;
   
   factory DatabaseService() => _instance;
   
   DatabaseService._internal();
   
-  // Метод для инициализации базы данных
-  Future<void> get database async {
-    if (!_initialized) {
-      _loadFromLocalStorage();
-      if (_store['users']!.isEmpty) {
-        await _initializeData();
-      }
-      _initialized = true;
-    }
-    return Future.value();
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDatabase();
+    return _database!;
   }
   
-  // Загрузка данных из localStorage
-  void _loadFromLocalStorage() {
-    try {
-      if (html.window.localStorage.containsKey(_usersKey)) {
-        _store['users'] = List<Map<String, dynamic>>.from(
-          jsonDecode(html.window.localStorage[_usersKey]!).map((item) => 
-            Map<String, dynamic>.from(item)
-          )
-        );
-      }
-      
-      if (html.window.localStorage.containsKey(_productsKey)) {
-        _store['products'] = List<Map<String, dynamic>>.from(
-          jsonDecode(html.window.localStorage[_productsKey]!).map((item) => 
-            Map<String, dynamic>.from(item)
-          )
-        );
-      }
-      
-      if (html.window.localStorage.containsKey(_cartItemsKey)) {
-        _store['cart_items'] = List<Map<String, dynamic>>.from(
-          jsonDecode(html.window.localStorage[_cartItemsKey]!).map((item) => 
-            Map<String, dynamic>.from(item)
-          )
-        );
-      }
-      
-      if (html.window.localStorage.containsKey(_ordersKey)) {
-        _store['orders'] = List<Map<String, dynamic>>.from(
-          jsonDecode(html.window.localStorage[_ordersKey]!).map((item) => 
-            Map<String, dynamic>.from(item)
-          )
-        );
-      }
-      
-      if (html.window.localStorage.containsKey(_orderItemsKey)) {
-        _store['order_items'] = List<Map<String, dynamic>>.from(
-          jsonDecode(html.window.localStorage[_orderItemsKey]!).map((item) => 
-            Map<String, dynamic>.from(item)
-          )
-        );
-      }
-    } catch (e) {
-      print('Ошибка загрузки данных из localStorage: $e');
-      _store = {
-        'users': <Map<String, dynamic>>[],
-        'products': <Map<String, dynamic>>[],
-        'cart_items': <Map<String, dynamic>>[],
-        'orders': <Map<String, dynamic>>[],
-        'order_items': <Map<String, dynamic>>[],
-      };
-    }
-  }
-  
-  // Сохранение данных в localStorage
-  void _saveToLocalStorage() {
-    try {
-      html.window.localStorage[_usersKey] = jsonEncode(_store['users']);
-      html.window.localStorage[_productsKey] = jsonEncode(_store['products']);
-      html.window.localStorage[_cartItemsKey] = jsonEncode(_store['cart_items']);
-      html.window.localStorage[_ordersKey] = jsonEncode(_store['orders']);
-      html.window.localStorage[_orderItemsKey] = jsonEncode(_store['order_items']);
-    } catch (e) {
-      print('Ошибка сохранения данных в localStorage: $e');
-    }
-  }
-  
-  // Заполнение начальными данными
-  Future<void> _initializeData() async {
-    // Добавляем админа
-    _store['users'] = [
-      {
-        'id': '1',
-        'name': 'Админ',
-        'email': 'admin@qazaqrepublic.kz',
-        'password': _hashPassword('admin123'),
-        'role': 'admin'
-      }
-    ];
+  Future<Database> _initDatabase() async {
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentsDirectory.path, 'qazaq_republic.db');
     
-    // Добавляем обновленные товары
-    _store['products'] = [
+    return await openDatabase(
+      path,
+      version: 1,
+      onCreate: _onCreate,
+    );
+  }
+  
+  Future<void> _onCreate(Database db, int version) async {
+    // Создание таблицы пользователей
+    await db.execute('''
+      CREATE TABLE users(
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'user'
+      )
+    ''');
+    
+    // Создание таблицы товаров
+    await db.execute('''
+      CREATE TABLE products(
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT NOT NULL,
+        price REAL NOT NULL,
+        image_url TEXT NOT NULL,
+        sizes TEXT NOT NULL,
+        colors TEXT NOT NULL,
+        category TEXT NOT NULL,
+        stock INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+    
+    // Создание таблицы корзины
+    await db.execute('''
+      CREATE TABLE cart_items(
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        product_id TEXT NOT NULL,
+        quantity INTEGER NOT NULL,
+        selected_size TEXT NOT NULL,
+        selected_color TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users (id),
+        FOREIGN KEY (product_id) REFERENCES products (id)
+      )
+    ''');
+    
+    // Создание таблицы заказов
+    await db.execute('''
+      CREATE TABLE orders(
+        id TEXT PRIMARY KEY,
+        userId TEXT NOT NULL,
+        userName TEXT NOT NULL,
+        orderDate TEXT NOT NULL,
+        totalAmount REAL NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        address TEXT,
+        paymentMethod TEXT,
+        FOREIGN KEY (userId) REFERENCES users (id)
+      )
+    ''');
+    
+    // Создание таблицы элементов заказа
+    await db.execute('''
+      CREATE TABLE order_items(
+        id TEXT PRIMARY KEY,
+        orderId TEXT NOT NULL,
+        productId TEXT NOT NULL,
+        productName TEXT NOT NULL,
+        quantity INTEGER NOT NULL,
+        price REAL NOT NULL,
+        selectedSize TEXT,
+        selectedColor TEXT,
+        FOREIGN KEY (orderId) REFERENCES orders (id),
+        FOREIGN KEY (productId) REFERENCES products (id)
+      )
+    ''');
+    
+    // Заполнение начальными данными (точно такими же как в web версии)
+    await _initializeData(db);
+  }
+  
+  Future<void> _initializeData(Database db) async {
+    // Добавляем админа (точно такого же как в web версии)
+    await db.insert('users', {
+      'id': '1',
+      'name': 'Админ',
+      'email': 'admin@qazaqrepublic.kz',
+      'password': _hashPassword('admin123'),
+      'role': 'admin'
+    });
+    
+    // Добавляем точно такие же товары как в web версии
+    final products = [
       {
         'id': '1',
         'name': 'QR Футболка',
-        'description': 'Классикалық мақта футболка. 100% табиғи материал.',
         'price': 7990.0,
         'image_url': 'assets/images/tshirt_black.jpg',
         'sizes': 'S,M,L,XL,XXL',
@@ -137,7 +130,6 @@ class DatabaseService {
       {
         'id': '2',
         'name': 'QR Худи',
-        'description': 'Жылы худи, қысқа және күзге арналған.',
         'price': 14990.0,
         'image_url': 'assets/images/Hoode.jpeg',
         'sizes': 'S,M,L,XL,XXL',
@@ -148,7 +140,6 @@ class DatabaseService {
       {
         'id': '3',
         'name': 'QR Жейде',
-        'description': 'Классикалық стильдегі жейде.',
         'price': 11990.0,
         'image_url': 'assets/images/shirtlongdark-blue.jpeg',
         'sizes': 'S,M,L,XL',
@@ -159,7 +150,6 @@ class DatabaseService {
       {
         'id': '4',
         'name': 'QR Кепка',
-        'description': 'кепка. күнделікті лукты толықтыратын ерекше аксессуар.',
         'price': 8000.0,
         'image_url': 'assets/images/cap.jpg',
         'sizes': 'Стандарт',
@@ -170,7 +160,6 @@ class DatabaseService {
       {
         'id': '5',
         'name': 'QR Свитшот',
-        'description': 'Свитшот. кез келген мезгілге арналған ыңғайлы киім. топтамада базалық және принтті үлгілер бар. qr-дың фирмалық үлгісінде жасалған.',
         'price': 18000.0,
         'image_url': 'assets/images/sweatshirt.jpg',
         'sizes': 'S,M,L,XL',
@@ -181,7 +170,6 @@ class DatabaseService {
       {
         'id': '6',
         'name': 'CARGO Ветровка',
-        'description': 'cargo jacket. кең пішімде жасалған күрте. үш сыйымды қалтасы бар.',
         'price': 26500.0,
         'image_url': 'assets/images/windbreaker.jpg',
         'sizes': 'S,M,L,XL',
@@ -191,159 +179,98 @@ class DatabaseService {
       }
     ];
     
-    // Сохраняем данные в localStorage
-    _saveToLocalStorage();
-  }
-  
-  // Методы для работы с данными
-  
-  // Получение данных из таблицы - переименовано из query
-  Future<List<Map<String, dynamic>>> queryTable(
-    String table, {
-    String? where,
-    List<dynamic>? whereArgs,
-  }) async {
-    final List<Map<String, dynamic>> data = List.from(_store[table] ?? []);
-    
-    if (where != null && whereArgs != null) {
-      // Очень простая имитация условий WHERE
-      return data.where((item) {
-        if (where.contains('=')) {
-          final parts = where.split('=');
-          final field = parts[0].trim();
-          return item[field].toString() == whereArgs[0].toString();
-        }
-        return true;
-      }).toList();
+    for (final product in products) {
+      await db.insert('products', product);
     }
-    
-    return data;
   }
   
-  // Выполнение произвольного запроса - переименовано из rawQuery
-  Future<List<Map<String, dynamic>>> executeRawQuery(
-    String sql,
-    List<dynamic> arguments,
-  ) async {
-    // Очень упрощенная имитация JOIN-запросов
-    if (sql.contains('cart_items') && sql.contains('products')) {
-      final userId = arguments[0];
-      final cartItems = await queryTable('cart_items', where: 'user_id = ?', whereArgs: [userId]);
-      
-      // Объединяем данные корзины и товаров
-      final result = <Map<String, dynamic>>[];
-      
-      for (var item in cartItems) {
-        final productId = item['product_id'];
-        final products = await queryTable('products', where: 'id = ?', whereArgs: [productId]);
-        
-        if (products.isNotEmpty) {
-          final product = products.first;
-          result.add({
-            ...item,
-            'product_name': product['name'],
-            'product_price': product['price'],
-            'product_image_url': product['image_url'],
-          });
-        } else {
-          result.add(item);
-        }
-      }
-      
-      return result;
-    }
-    
-    // Для других запросов просто возвращаем пустой список
-    return [];
-  }
-  
-  // Вставка данных - переименовано из insert
-  Future<int> insertRecord(String table, Map<String, dynamic> data) async {
-    _store[table]!.add(Map<String, dynamic>.from(data));
-    _saveToLocalStorage();
-    return 1; // Имитация успешной вставки
-  }
-  
-  // Обновление данных - переименовано из update
-  Future<int> updateRecord(
-    String table,
-    Map<String, dynamic> data, {
-    String? where,
-    List<dynamic>? whereArgs,
-  }) async {
-    if (where != null && whereArgs != null) {
-      final items = _store[table]!;
-      
-      for (int i = 0; i < items.length; i++) {
-        // Простая имитация условия WHERE
-        if (where.contains('=')) {
-          final parts = where.split('=');
-          final field = parts[0].trim();
-          
-          if (items[i][field].toString() == whereArgs[0].toString()) {
-            // Обновляем только переданные поля
-            data.forEach((key, value) {
-              items[i][key] = value;
-            });
-          }
-        }
-      }
-      
-      _saveToLocalStorage();
-    }
-    
-    return 1; // Имитация успешного обновления
-  }
-  
-  // Удаление данных - переименовано из delete
-  Future<int> deleteRecord(
-    String table, {
-    String? where,
-    List<dynamic>? whereArgs,
-  }) async {
-    if (where != null && whereArgs != null) {
-      final items = _store[table]!;
-      
-      // Простая имитация условия WHERE
-      _store[table] = items.where((item) {
-        if (where.contains('=')) {
-          final parts = where.split('=');
-          final field = parts[0].trim();
-          return item[field].toString() != whereArgs[0].toString();
-        }
-        return true;
-      }).toList();
-      
-      _saveToLocalStorage();
-    }
-    
-    return 1; // Имитация успешного удаления
-  }
-  
-  // Хеширование пароля
+  // Хеширование пароля (такое же как в web версии)
   String _hashPassword(String password) {
     // В реальном приложении здесь должен быть настоящий хеш
     return password; // Для тестирования просто возвращаем пароль
   }
   
-  // Методы-прокси для обратной совместимости
-  Future<List<Map<String, dynamic>>> query(String table, {String? where, List<dynamic>? whereArgs}) {
-    return queryTable(table, where: where, whereArgs: whereArgs);
+  // Методы для работы с данными (совместимые с web версией)
+  Future<List<Map<String, dynamic>>> query(
+    String table, {
+    String? where,
+    List<dynamic>? whereArgs,
+  }) async {
+    final db = await database;
+    return await db.query(table, where: where, whereArgs: whereArgs);
   }
   
-  Future<List<Map<String, dynamic>>> rawQuery(String sql, List<dynamic> arguments) {
-    return executeRawQuery(sql, arguments);
+  Future<List<Map<String, dynamic>>> rawQuery(
+    String sql,
+    List<dynamic> arguments,
+  ) async {
+    final db = await database;
+    return await db.rawQuery(sql, arguments);
   }
   
-  Future<int> insert(String table, Map<String, dynamic> data) {
-    return insertRecord(table, data);
+  Future<int> insert(String table, Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.insert(table, data);
   }
   
-  Future<int> update(String table, Map<String, dynamic> data, {String? where, List<dynamic>? whereArgs}) {
-    return updateRecord(table, data, where: where, whereArgs: whereArgs);
+  Future<int> update(
+    String table,
+    Map<String, dynamic> data, {
+    String? where,
+    List<dynamic>? whereArgs,
+  }) async {
+    final db = await database;
+    return await db.update(table, data, where: where, whereArgs: whereArgs);
   }
   
-  Future<int> delete(String table, {String? where, List<dynamic>? whereArgs}) {
-    return deleteRecord(table, where: where, whereArgs: whereArgs);
+  Future<int> delete(
+    String table, {
+    String? where,
+    List<dynamic>? whereArgs,
+  }) async {
+    final db = await database;
+    return await db.delete(table, where: where, whereArgs: whereArgs);
+  }
+  
+  // Методы-прокси для обратной совместимости с web версией
+  Future<List<Map<String, dynamic>>> queryTable(
+    String table, {
+    String? where,
+    List<dynamic>? whereArgs,
+  }) {
+    return query(table, where: where, whereArgs: whereArgs);
+  }
+  
+  Future<List<Map<String, dynamic>>> executeRawQuery(
+    String sql,
+    List<dynamic> arguments,
+  ) {
+    return rawQuery(sql, arguments);
+  }
+  
+  Future<int> insertRecord(String table, Map<String, dynamic> data) {
+    return insert(table, data);
+  }
+  
+  Future<int> updateRecord(
+    String table,
+    Map<String, dynamic> data, {
+    String? where,
+    List<dynamic>? whereArgs,
+  }) {
+    return update(table, data, where: where, whereArgs: whereArgs);
+  }
+  
+  Future<int> deleteRecord(
+    String table, {
+    String? where,
+    List<dynamic>? whereArgs,
+  }) {
+    return delete(table, where: where, whereArgs: whereArgs);
+  }
+  
+  Future<void> close() async {
+    final db = await database;
+    await db.close();
   }
 }

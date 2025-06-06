@@ -95,6 +95,48 @@ class _UserOrdersScreenState extends State<UserOrdersScreen> {
     );
   }
 
+  Widget _buildMobileProductImage(String productId) {
+    return FutureBuilder<Product?>(
+      future: Provider.of<ProductProvider>(context, listen: false).getProductById(productId),
+      builder: (context, snapshot) {
+        String imageUrl = '';
+        if (snapshot.hasData && snapshot.data != null) {
+          imageUrl = snapshot.data!.imageUrl;
+        }
+        
+        return Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            color: AppColors.lightGray,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border, width: 1),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(11),
+            child: imageUrl.isNotEmpty
+                ? Image.asset(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.image_not_supported_outlined,
+                        color: AppColors.textSecondary,
+                        size: 32,
+                      );
+                    },
+                  )
+                : const Icon(
+                    Icons.image_not_supported_outlined,
+                    color: AppColors.textSecondary,
+                    size: 32,
+                  ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildBody() {
     if (_isLoading) {
       return const Center(
@@ -117,7 +159,7 @@ class _UserOrdersScreenState extends State<UserOrdersScreen> {
       onRefresh: _loadUserOrders,
       color: AppColors.primary,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16), // Уменьшил отступы
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -126,33 +168,201 @@ class _UserOrdersScreenState extends State<UserOrdersScreen> {
               'МЕНІҢ ТАПСЫРЫСТАРЫМ',
               style: AppTextStyles.heading2.copyWith(
                 letterSpacing: 1.5,
+                fontSize: 18, // Уменьшил размер для мобилки
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 20),
             
-            // Сетка заказов
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final screenWidth = constraints.maxWidth;
-                final crossAxisCount = screenWidth > 1200 ? 4 : (screenWidth > 800 ? 3 : 2);
-                
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 20,
-                    mainAxisSpacing: 20,
-                    childAspectRatio: 1.4, // Еще больше уменьшена высота
-                  ),
-                  itemCount: _orders.length,
-                  itemBuilder: (context, index) {
-                    return _buildOrderCard(_orders[index]);
-                  },
-                );
+            // Список заказов вместо сетки
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _orders.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 16),
+              itemBuilder: (context, index) {
+                return _buildMobileOrderCard(_orders[index]);
               },
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileOrderCard(Order order) {
+    final dateFormat = DateFormat('dd.MM.yyyy');
+    final formattedDate = dateFormat.format(order.orderDate);
+
+    return GestureDetector(
+      onTap: () => _showOrderDetails(order),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: AppColors.cardBackground,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.shadow,
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Верхняя часть - номер заказа, дата и статус
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '#${order.id.substring(0, 6).toUpperCase()}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.0,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        formattedDate,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  _buildStatusChip(order.status),
+                ],
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Основная информация о заказе
+              Row(
+                children: [
+                  // Фото первого товара
+                  _buildMobileProductImage(order.items.first.productId),
+                  const SizedBox(width: 16),
+                  
+                  // Информация о товарах
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Название первого товара
+                        Text(
+                          order.items.first.productName,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 8),
+                        
+                        // Количество товаров
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.lightGray,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '${order.items.length} ТАУАР',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        
+                        if (order.items.length > 1) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            '+${order.items.length - 1} тағы',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Разделитель
+              Container(
+                height: 1,
+                color: AppColors.border,
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Итоговая сумма и кнопка
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'СОМА:',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                          color: Colors.black54,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${order.totalAmount.toInt()} ₸',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black, width: 1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      'КӨРУ',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.0,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
