@@ -545,7 +545,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               // Купить сейчас
               Expanded(
                 child: CustomButton(
-                  text: 'ҚАЗІР САТЫП АЛУ',
+                  text: 'САТЫП АЛУ',
                   type: ButtonType.outline,
                   onPressed: widget.product.stock > 0
                       ? () => _buyNow(authProvider, cartProvider)

@@ -22,10 +22,11 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ProductProvider>(context, listen: false).loadProducts();
-      
+
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       if (authProvider.isLoggedIn) {
-        Provider.of<CartProvider>(context, listen: false).loadCartItems(authProvider.user!.id);
+        Provider.of<CartProvider>(context, listen: false)
+            .loadCartItems(authProvider.user!.id);
       }
     });
   }
@@ -35,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
     final productProvider = Provider.of<ProductProvider>(context);
     final cartProvider = Provider.of<CartProvider>(context);
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: productProvider.isLoading
@@ -49,13 +50,13 @@ class _HomeScreenState extends State<HomeScreen> {
               slivers: [
                 // App Bar
                 _buildAppBar(authProvider, cartProvider),
-                
+
                 // Hero Section
                 _buildHeroSection(),
-                
+
                 // Categories Section
                 _buildCategoriesSection(),
-                
+
                 // Products Section
                 _buildProductsSection(productProvider),
               ],
@@ -71,7 +72,8 @@ class _HomeScreenState extends State<HomeScreen> {
       pinned: true,
       toolbarHeight: 70, // Уменьшил с 80 до 70
       flexibleSpace: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15), // Уменьшил отступы
+        padding: const EdgeInsets.symmetric(
+            horizontal: 16, vertical: 15), // Уменьшил отступы
         child: Row(
           children: [
             // Меню кнопка для мобилки
@@ -84,12 +86,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             // Logo (компактнее для мобилки)
-            Expanded(
+            const Expanded(
               child: Center(
                 child: Text(
                   'QAZAQ REPUBLIC',
                   style: TextStyle(
-                    fontSize: 16, // Немного увеличил для центрального расположения
+                    fontSize:
+                        16, // Немного увеличил для центрального расположения
                     fontWeight: FontWeight.w800,
                     color: Colors.black,
                     letterSpacing: 1.0,
@@ -103,7 +106,8 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 // Search
                 IconButton(
-                  icon: const Icon(Icons.search, color: Colors.black, size: 22), // Уменьшил размер
+                  icon: const Icon(Icons.search,
+                      color: Colors.black, size: 22), // Уменьшил размер
                   onPressed: () {
                     Navigator.pushNamed(context, AppRoutes.catalog);
                   },
@@ -114,7 +118,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Stack(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.shopping_bag_outlined, color: Colors.black, size: 22),
+                      icon: const Icon(Icons.shopping_bag_outlined,
+                          color: Colors.black, size: 22),
                       onPressed: () {
                         Navigator.pushNamed(context, AppRoutes.cart);
                       },
@@ -155,7 +160,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.person, color: Colors.white, size: 20), // Уменьшил размер
+                    icon: const Icon(Icons.person,
+                        color: Colors.white, size: 20), // Уменьшил размер
                     onPressed: () {
                       if (authProvider.isLoggedIn) {
                         _showProfileMenu(context);
@@ -241,6 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
   Widget _buildNavItem(String title, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
@@ -260,7 +267,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return SliverToBoxAdapter(
       child: Container(
         height: 500, // Уменьшил с 600 до 500 для мобилки
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16), // Уменьшил отступы
+        margin: const EdgeInsets.symmetric(
+            horizontal: 16, vertical: 16), // Уменьшил отступы
         decoration: BoxDecoration(
           color: const Color(0xFFE8E8E8),
           borderRadius: BorderRadius.circular(16),
@@ -282,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            
+
             // Gradient Overlay
             Positioned.fill(
               child: Container(
@@ -299,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            
+
             // Content (адаптированный для мобилки)
             Positioned(
               left: 24, // Уменьшил с 60 до 24
@@ -311,7 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Заголовок (разбил на отдельные строки)
-                  Text(
+                  const Text(
                     'QAZAQ',
                     style: TextStyle(
                       fontSize: 32, // Уменьшил с 56 до 32
@@ -321,7 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 0.9,
                     ),
                   ),
-                  Text(
+                  const Text(
                     'REPUBLIC',
                     style: TextStyle(
                       fontSize: 32,
@@ -331,7 +339,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 0.9,
                     ),
                   ),
-                  Text(
+                  const Text(
                     'CLASSIC',
                     style: TextStyle(
                       fontSize: 32,
@@ -352,10 +360,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 32), // Добавил отступ перед кнопкой
-                  
+
                   // Кнопка (переместил в основной контент)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(25),
@@ -365,7 +374,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.pushNamed(context, AppRoutes.catalog);
                       },
                       child: const Text(
-                        'В КАТАЛОГ',
+                        'Каталогқа өту',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 12,
@@ -387,7 +396,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildCategoriesSection() {
     return SliverToBoxAdapter(
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 32), // Уменьшил отступы
+        margin: const EdgeInsets.symmetric(
+            horizontal: 16, vertical: 32), // Уменьшил отступы
         child: Column(
           children: [
             // Categories Grid
@@ -423,18 +433,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(width: 12), // Уменьшил с 20 до 12
-                
+
                 // Right Category
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.pushNamed(
-                        context, 
-                        AppRoutes.catalog, 
-                        arguments: 'ЛЕТНЯЯ_КОЛЛЕКЦИЯ'
-                      );
+                      Navigator.pushNamed(context, AppRoutes.catalog,
+                          arguments: 'Жазғы_топтама');
                     },
                     child: Container(
                       height: 220, // Уменьшил с 280 до 220
@@ -459,7 +466,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           ),
-                          
+
                           // Gradient Overlay
                           Positioned.fill(
                             child: Container(
@@ -470,23 +477,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                   end: Alignment.bottomCenter,
                                   colors: [
                                     Colors.transparent,
-                                    Colors.black.withOpacity(0.7), // Увеличил непрозрачность
+                                    Colors.black.withOpacity(
+                                        0.7), // Увеличил непрозрачность
                                   ],
                                 ),
                               ),
                             ),
                           ),
-                          
+
                           // Text (адаптированный для мобилки)
-                          Positioned(
+                          const Positioned(
                             bottom: 20, // Уменьшил с 30 до 20
-                            left: 16,   // Уменьшил с 30 до 16
-                            right: 16,  // Добавил правый отступ
+                            left: 16, // Уменьшил с 30 до 16
+                            right: 16, // Добавил правый отступ
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'ЛЕТНЯЯ',
+                                  'ЖАЗҒЫ',
                                   style: TextStyle(
                                     fontSize: 16, // Уменьшил с 20
                                     fontWeight: FontWeight.w700,
@@ -496,7 +504,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                                 Text(
-                                  'КОЛЛЕКЦИЯ',
+                                  'ТОПТАМА',
                                   style: TextStyle(
                                     fontSize: 16, // Уменьшил с 20
                                     fontWeight: FontWeight.w700,
@@ -520,6 +528,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
   Widget _buildCategoryItem(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8), // Уменьшил с 12 до 8
@@ -530,7 +539,8 @@ class _HomeScreenState extends State<HomeScreen> {
         child: MouseRegion(
           cursor: SystemMouseCursors.click,
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 2), // Уменьшил с 4 до 2
+            padding:
+                const EdgeInsets.symmetric(vertical: 2), // Уменьшил с 4 до 2
             child: Text(
               title,
               style: const TextStyle(
@@ -547,72 +557,74 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildProductsSection(ProductProvider productProvider) {
-      return SliverToBoxAdapter(
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-          child: Column(
-            children: [
-              // Section Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'БЕСТСЕЛЛЕРЫ',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
-                      letterSpacing: 1.0,
-                    ),
+    return SliverToBoxAdapter(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+        child: Column(
+          children: [
+            // Section Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'БЕСТСЕЛЛЕРЫ',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
+                    letterSpacing: 1.0,
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black, width: 1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.catalog);
-                      },
-                      child: const Text(
-                        'В КАТАЛОГ',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
-                          letterSpacing: 1.0,
-                        ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black, width: 1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.catalog);
+                    },
+                    child: const Text(
+                      'Каталогқа өту',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                        letterSpacing: 1.0,
                       ),
                     ),
                   ),
-                ],
-              ),
-              
-              const SizedBox(height: 24),
-              
-              // Products Horizontal List - УВЕЛИЧИЛ ВЫСОТУ И ШИРИНУ
-              SizedBox(
-                height: 380, // Увеличил с 320 до 380
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.zero,
-                  itemCount: productProvider.products.length,
-                  itemBuilder: (context, index) {
-                    final product = productProvider.products[index];
-                    return Container(
-                      width: 230, // Увеличил с 200 до 230
-                      margin: const EdgeInsets.only(right: 16),
-                      child: _buildMobileProductCard(product),
-                    );
-                  },
                 ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // Products Horizontal List - УВЕЛИЧИЛ ВЫСОТУ И ШИРИНУ
+            SizedBox(
+              height: 380, // Увеличил с 320 до 380
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.zero,
+                itemCount: productProvider.products.length,
+                itemBuilder: (context, index) {
+                  final product = productProvider.products[index];
+                  return Container(
+                    width: 230, // Увеличил с 200 до 230
+                    margin: const EdgeInsets.only(right: 16),
+                    child: _buildMobileProductCard(product),
+                  );
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
-    }
+      ),
+    );
+  }
+
   Widget _buildMobileProductCard(product) {
     return GestureDetector(
       onTap: () {
@@ -635,9 +647,9 @@ class _HomeScreenState extends State<HomeScreen> {
               flex: 5, // Увеличил с 3 до 5 для картинки
               child: Container(
                 width: double.infinity,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
-                  borderRadius: const BorderRadius.vertical(
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.vertical(
                     top: Radius.circular(12),
                   ),
                 ),
@@ -669,7 +681,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            
+
             // Product Info - УВЕЛИЧИЛ МЕСТО ДЛЯ ТЕКСТА
             Expanded(
               flex: 3, // Увеличил с 1 до 3 для текста
@@ -677,7 +689,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.all(16), // Увеличил отступы
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Изменил на spaceEvenly
+                  mainAxisAlignment:
+                      MainAxisAlignment.spaceEvenly, // Изменил на spaceEvenly
                   children: [
                     // Product Name
                     Text(
@@ -691,7 +704,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
+
                     // Price and Category
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -725,7 +738,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-  
+
   Widget _buildModernProductCard(product) {
     return GestureDetector(
       onTap: () {
@@ -748,9 +761,9 @@ class _HomeScreenState extends State<HomeScreen> {
               flex: 3,
               child: Container(
                 width: double.infinity,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
-                  borderRadius: const BorderRadius.vertical(
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.vertical(
                     top: Radius.circular(16),
                   ),
                 ),
@@ -782,7 +795,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            
+
             // Product Info
             Expanded(
               flex: 1,
@@ -803,7 +816,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
+
                     // Price
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -839,7 +852,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showProfileMenu(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
