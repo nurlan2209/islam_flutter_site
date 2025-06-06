@@ -3,6 +3,7 @@ import '../constants/colors.dart';
 import '../constants/strings.dart';
 import '../constants/text_styles.dart';
 import '../models/cart_item.dart';
+import '../utils/image_helper.dart';
 
 class CartItemWidget extends StatelessWidget {
   final CartItem item;
@@ -46,27 +47,12 @@ class CartItemWidget extends StatelessWidget {
                   color: AppColors.lightGray,
                   border: Border.all(color: AppColors.border, width: 1),
                 ),
-                child: item.productImageUrl != null && item.productImageUrl!.isNotEmpty
-                    ? Image.asset(
-                        item.productImageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Center(
-                            child: Icon(
-                              Icons.image_not_supported_outlined,
-                              color: AppColors.textSecondary,
-                              size: 32,
-                            ),
-                          );
-                        },
-                      )
-                    : const Center(
-                        child: Icon(
-                          Icons.image_not_supported_outlined,
-                          color: AppColors.textSecondary,
-                          size: 32,
-                        ),
-                      ),
+                child: ImageHelper.buildProductImage(
+                  item.productImageUrl ?? '',
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                ),
               ),
               
               const SizedBox(width: 16),

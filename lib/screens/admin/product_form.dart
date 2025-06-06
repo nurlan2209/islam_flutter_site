@@ -36,8 +36,16 @@ class _ProductFormState extends State<ProductForm> {
   bool _isEdit = false;
   
   // Предлагаемые категории
-  final List<String> _suggestedCategories = ['Футболкалар', 'Худи', 'Жейде', 'Шапки', 'Аксессуары'];
-  
+  final List<String> _suggestedCategories = [
+    'Футболка', 
+    'Худи', 
+    'Жейде', 
+    'Свитшоты',
+    'Ветровки',
+    'Аксессуары',
+    'Спорт киімдері', // Новая категория
+    'Жалпы киімдер'   // Новая категория
+  ];
   // Предлагаемые размеры
   final List<String> _commonSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
   

@@ -8,6 +8,7 @@ import '../providers/product_provider.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/product_card.dart';
 import '../routes.dart';
+import '../utils/image_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -426,6 +427,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               _buildCategoryItem('СВИТШОТЫ'),
                               _buildCategoryItem('ВЕТРОВКИ'),
                               _buildCategoryItem('АКСЕССУАРЫ'),
+                              _buildCategoryItem('СПОРТ КИІМДЕРІ'),
+                              _buildCategoryItem('ЖАЛПЫ КИІМДЕР'),
                             ],
                           ),
                         ),
@@ -642,9 +645,9 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product Image - ИЗМЕНИЛ ПРОПОРЦИИ
+            // Product Image - с универсальной загрузкой
             Expanded(
-              flex: 5, // Увеличил с 3 до 5 для картинки
+              flex: 5,
               child: Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
@@ -657,49 +660,33 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(12),
                   ),
-                  child: product.imageUrl.isNotEmpty
-                      ? Image.asset(
-                          product.imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Center(
-                              child: Icon(
-                                Icons.image_not_supported_outlined,
-                                size: 40,
-                                color: Colors.black26,
-                              ),
-                            );
-                          },
-                        )
-                      : const Center(
-                          child: Icon(
-                            Icons.image_not_supported_outlined,
-                            size: 40,
-                            color: Colors.black26,
-                          ),
-                        ),
+                  child: ImageHelper.buildProductImage(
+                    product.imageUrl,
+                    width: double.infinity,
+                    height: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
 
-            // Product Info - УВЕЛИЧИЛ МЕСТО ДЛЯ ТЕКСТА
+            // Product Info
             Expanded(
-              flex: 3, // Увеличил с 1 до 3 для текста
+              flex: 3,
               child: Padding(
-                padding: const EdgeInsets.all(16), // Увеличил отступы
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment:
-                      MainAxisAlignment.spaceEvenly, // Изменил на spaceEvenly
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     // Product Name
                     Text(
                       product.name,
                       style: const TextStyle(
-                        fontSize: 15, // Увеличил размер шрифта
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: Colors.black,
-                        height: 1.2, // Добавил межстрочный интервал
+                        height: 1.2,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -712,16 +699,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(
                           '${product.price.toInt()} ₸',
                           style: const TextStyle(
-                            fontSize: 17, // Увеличил размер
+                            fontSize: 17,
                             fontWeight: FontWeight.w700,
                             color: Colors.black,
                           ),
                         ),
-                        const SizedBox(height: 4), // Добавил отступ
+                        const SizedBox(height: 4),
                         Text(
                           product.category.toUpperCase(),
                           style: const TextStyle(
-                            fontSize: 12, // Увеличил размер
+                            fontSize: 12,
                             fontWeight: FontWeight.w500,
                             color: Colors.black54,
                             letterSpacing: 0.5,

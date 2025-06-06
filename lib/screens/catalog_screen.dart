@@ -7,6 +7,7 @@ import '../constants/text_styles.dart';
 import '../providers/product_provider.dart';
 import '../models/product.dart';
 import '../widgets/product_card.dart';
+import '../utils/image_helper.dart';
 
 class CatalogScreen extends StatefulWidget {
   final String? category;
@@ -736,8 +737,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       onTap: () {
         Navigator.pushNamed(
           context,
-          AppRoutes
-              .productDetail, // ИСПРАВЛЕНИЕ: используй константу из routes.dart
+          AppRoutes.productDetail,
           arguments: product,
         );
       },
@@ -756,7 +756,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Изображение товара
+            // Изображение товара с универсальной загрузкой
             Expanded(
               flex: 3,
               child: Container(
@@ -771,27 +771,12 @@ class _CatalogScreenState extends State<CatalogScreen> {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(8),
                   ),
-                  child: product.imageUrl.isNotEmpty
-                      ? Image.asset(
-                          product.imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Center(
-                              child: Icon(
-                                Icons.image_not_supported_outlined,
-                                size: 40,
-                                color: Colors.black26,
-                              ),
-                            );
-                          },
-                        )
-                      : const Center(
-                          child: Icon(
-                            Icons.image_not_supported_outlined,
-                            size: 40,
-                            color: Colors.black26,
-                          ),
-                        ),
+                  child: ImageHelper.buildProductImage(
+                    product.imageUrl,
+                    width: double.infinity,
+                    height: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
@@ -837,7 +822,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
       ),
     );
   }
-
   Widget _buildEmptyState() {
     return Center(
       child: Padding(

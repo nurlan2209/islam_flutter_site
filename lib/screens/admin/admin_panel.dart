@@ -5,6 +5,7 @@ import '../../providers/product_provider.dart';
 import '../../models/product.dart';
 import '../../services/local_order_service.dart'; // Новый сервис
 import '../../routes.dart';
+import '../../utils/image_helper.dart';
 import 'product_form.dart';
 import 'users_list.dart';
 import 'admin_orders_page.dart'; // Новый импорт
@@ -95,17 +96,23 @@ class _AdminPanelState extends State<AdminPanel> with SingleTickerProviderStateM
                   return Card(
                     margin: const EdgeInsets.only(bottom: 16),
                     child: ListTile(
-                      leading: product.imageUrl.isNotEmpty
-                          ? Image.network(
-                              product.imageUrl,
-                              width: 50,
-                              height: 50,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Icon(Icons.image_not_supported);
-                              },
-                            )
-                          : const Icon(Icons.image_not_supported),
+                      leading: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: ImageHelper.buildProductImage(
+                            product.imageUrl,
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
                       title: Text(product.name),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

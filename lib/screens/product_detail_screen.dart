@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/custom_button.dart';
 import '../routes.dart';
+import '../utils/image_helper.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
@@ -145,27 +146,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ),
       child: Stack(
         children: [
-          // Основное изображение
+          // Основное изображение с универсальной загрузкой
           SizedBox(
             width: double.infinity,
             height: double.infinity,
-            child: widget.product.imageUrl.isNotEmpty
-                ? (widget.product.imageUrl.startsWith('http')
-                    ? Image.network(
-                        widget.product.imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return _buildImagePlaceholder();
-                        },
-                      )
-                    : Image.asset(
-                        widget.product.imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return _buildImagePlaceholder();
-                        },
-                      ))
-                : _buildImagePlaceholder(),
+            child: ImageHelper.buildProductImage(
+              widget.product.imageUrl,
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+            ),
           ),
           
           // Индикатор наличия
@@ -208,32 +198,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildImagePlaceholder() {
-    return Container(
-      color: AppColors.lightGray,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.image_not_supported_outlined,
-              size: 80,
-              color: AppColors.textSecondary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'СУРЕТ ЖОҚ',
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

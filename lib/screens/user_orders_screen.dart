@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import '../models/order.dart';
 import '../models/product.dart';
 import '../services/local_order_service.dart';
+import '../utils/image_helper.dart';
 import '../providers/product_provider.dart';
 
 class UserOrdersScreen extends StatefulWidget {
@@ -114,23 +115,12 @@ class _UserOrdersScreenState extends State<UserOrdersScreen> {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(11),
-            child: imageUrl.isNotEmpty
-                ? Image.asset(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(
-                        Icons.image_not_supported_outlined,
-                        color: AppColors.textSecondary,
-                        size: 32,
-                      );
-                    },
-                  )
-                : const Icon(
-                    Icons.image_not_supported_outlined,
-                    color: AppColors.textSecondary,
-                    size: 32,
-                  ),
+            child: ImageHelper.buildProductImage(
+              imageUrl,
+              width: 80,
+              height: 80,
+              fit: BoxFit.cover,
+            ),
           ),
         );
       },
@@ -666,7 +656,7 @@ class _UserOrdersScreenState extends State<UserOrdersScreen> {
         }
         
         return Container(
-          width: 105, // Увеличен размер фото
+          width: 105,
           height: 105,
           decoration: BoxDecoration(
             color: AppColors.lightGray,
@@ -675,23 +665,12 @@ class _UserOrdersScreenState extends State<UserOrdersScreen> {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(7),
-            child: imageUrl.isNotEmpty
-                ? Image.asset(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(
-                        Icons.image_not_supported_outlined,
-                        color: AppColors.textSecondary,
-                        size: 28, // Увеличена иконка
-                      );
-                    },
-                  )
-                : const Icon(
-                    Icons.image_not_supported_outlined,
-                    color: AppColors.textSecondary,
-                    size: 28, // Увеличена иконка
-                  ),
+            child: ImageHelper.buildProductImage(
+              imageUrl,
+              width: 105,
+              height: 105,
+              fit: BoxFit.cover,
+            ),
           ),
         );
       },
